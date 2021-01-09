@@ -146,12 +146,155 @@ namespace JASONParser
 
         public Node match(TINY_Token_Class ExpectedToken)
         {
+            return null;
+        }
+        // && or ||
+        public Node Boolean_Operator()
+        {
+            Node node = new Node("Boolean_Operator");
+            if (match(TINY_Token_Class.AndOp) != null)
+            {
+                node.children.Add(match(TINY_Token_Class.AndOp));
+                return node;
+            }
+            else if (match(TINY_Token_Class.OROp) != null) 
+            { 
+                node.children.Add(match(TINY_Token_Class.OROp));
+                return node;
+            }
+            return null;
+        }
+        //if (a+b>5)
+        //if (a==1 && r !=0 || y==g)
+        public Node Condition_Statement()
+        {
+            Node node = new Node("condition_statement"); 
+            if (Condition() != null)
+            {   
+                if (Boolean_Operator() != null)
+                {
+                  if(Condition_Statement() != null)
+                    {
+                      node.children.Add(Condition());
+                      node.children.Add(Boolean_Operator());
+                      node.children.Add(Condition_Statement());
+                      return node;
+                    }
+                }
+                if (Condition() != null)   // fe hena note
+                {
+                    node.children.Add(Condition());
+                    return node;
+                }
+            } 
+            return null;
+        }
+         public Node if_statement()
+        {
+            Node node = new Node("if_statement");
+            
+            if (match(TINY_Token_Class.If) !=null )
+            {
+                if (Condition_Statement() != null)
+                {
+                    if (match(TINY_Token_Class.then) != null) 
+                    {
+                        if (Statements() != null)
+                        {   
+                            if (Else_Claose() != null)
+                            {
+                                node.children.Add(match(TINY_Token_Class.If));
+                                node.children.Add(Condition_Statement());
+                                node.children.Add(match(TINY_Token_Class.then));
+                                node.children.Add(Statements());
+                                node.children.Add(Else_Claose());
+                                return node;
 
-
+                            }
+                        }
+                    }   
+                }
+            }
 
             return null;
         }
 
+        public Node ELse_if_statement()
+        {
+            Node node = new Node("Else_if_statement");
+            
+            if (match(TINY_Token_Class.Elseif) != null)
+            {
+                if (Condition_Statement() != null)
+                {
+                    if (match(TINY_Token_Class.then) != null)
+                    {
+                        if (Statements() != null)
+                        {
+                            if (Else_Claose() != null)
+                            {
+                                node.children.Add(match(TINY_Token_Class.Elseif));
+                                node.children.Add(Condition_Statement());
+                                node.children.Add(match(TINY_Token_Class.then));
+                                node.children.Add(Statements());
+                                node.children.Add(Else_Claose());
+                                return node;
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+        public Node Else_statement()
+        {
+            Node node = new Node("if_statement");
+            
+            if (match(TINY_Token_Class.Else) != null)
+            {
+                if (Statements() != null)
+                {
+                    if (match(TINY_Token_Class.endl) != null)
+                    {
+                        node.children.Add(match(TINY_Token_Class.Else));
+                        node.children.Add(Statements());
+                        node.children.Add(match(TINY_Token_Class.endl));
+                        return node;
+
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public Node Statements()
+        {
+            return null;
+        }
+        public Node Else_Claose()
+        {
+            Node node = new Node("if_statement");
+            if (ELse_if_statement() != null)
+            {
+                node.children.Add(ELse_if_statement());
+                return node;
+            }
+            else if (Else_statement() != null)
+            {
+                node.children.Add(Else_statement());
+                return node;
+            }
+            else if (match(TINY_Token_Class.endl) != null)
+            {
+                node.children.Add(match(TINY_Token_Class.endl));
+                return node;
+            }
+            return null;
+        }
+        
 
         //use this function to print the parse tree in TreeView Toolbox
         public static TreeNode PrintParseTree(Node root)

@@ -37,8 +37,6 @@ namespace TINY_COMPILER_MILSTONE1
 
         public TINY_Scanner()
         {
-
-
             int x = 3;
             Console.WriteLine(x);
             ReservedWords.Add("if", TINY_Token_Class.If);
