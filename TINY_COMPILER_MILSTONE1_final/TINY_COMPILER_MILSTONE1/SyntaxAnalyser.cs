@@ -8,6 +8,7 @@ using TINY_COMPILER_MILSTONE1;
 
 namespace JASONParser
 {
+    
     public class Node
     {
         public List<Node> children = new List<Node>();
@@ -23,11 +24,11 @@ namespace JASONParser
         int tokenIndex = 0;
         static List<TINY_Token> TokenStream;
         public static Node root;
-
+        Node emptyNode = new Node("empty");
         public  Node Parse(List<TINY_Token> Tokens)
         {
             TokenStream = Tokens;
-                 root = Program();
+            root = Program();
            
             return root;
         }
@@ -164,6 +165,18 @@ namespace JASONParser
             }
             return null;
         }
+        public Node Comment_Statement()
+        {
+            return null;
+        }
+        public Node Declarition_statement()
+        {
+            return null;
+        }
+        public Node Assignment_statement()
+        {
+            return null;
+        }
         //if (a+b>5)
         //if (a==1 && r !=0 || y==g)
         public Node Condition_Statement()
@@ -189,7 +202,74 @@ namespace JASONParser
             } 
             return null;
         }
-         public Node if_statement()
+        public Node Statements()
+        {
+            Node node = new Node("Statements");
+            if (Statement() != null)
+            {
+                    node.children.Add(Statement());
+                    if(Statements()!=emptyNode) node.children.Add(Statements());
+                    return node;
+                
+            }
+            if (Statement() != null)
+            {
+                node.children.Add(Statement());
+                return node;
+            }
+            return emptyNode;
+        }
+        public Node Statement()
+        {
+            Node node = new Node("Statement");
+            if (WriteStatement() != null)
+            {
+                node.children.Add(WriteStatement());
+                return node;
+            }
+            else if (ReadStatement() != null)
+            {
+                node.children.Add(ReadStatement());
+                return node;
+            }
+            else if ( Comment_Statement()!= null)
+            {
+                node.children.Add(Comment_Statement());
+                return node;
+            }
+            else if (Repeat_statement() != null)
+            {
+                node.children.Add(Repeat_statement());
+                return node;
+            }
+            else if (Declarition_statement() != null)
+            {
+                node.children.Add(Declarition_statement());
+                return node;
+            }
+            else if (if_statement() != null)
+            {
+                node.children.Add(if_statement());
+                return node;
+            }
+            else if (Return_statement() != null)
+            {
+                node.children.Add(Return_statement());
+                return node;
+            }
+            else if (Function_Call() != null)
+            {
+                node.children.Add(Function_Call());
+                return node;
+            }
+            else if (Assignment_statement() != null)
+            {
+                node.children.Add(Assignment_statement());
+                return node;
+            }
+            return emptyNode;
+        }
+        public Node if_statement()
         {
             Node node = new Node("if_statement");
             
@@ -199,19 +279,15 @@ namespace JASONParser
                 {
                     if (match(TINY_Token_Class.then) != null) 
                     {
-                        if (Statements() != null)
-                        {   
                             if (Else_Claose() != null)
                             {
                                 node.children.Add(match(TINY_Token_Class.If));
                                 node.children.Add(Condition_Statement());
                                 node.children.Add(match(TINY_Token_Class.then));
-                                node.children.Add(Statements());
+                                if (Statements() != null) node.children.Add(Statements());
                                 node.children.Add(Else_Claose());
                                 return node;
-
                             }
-                        }
                     }   
                 }
             }
@@ -269,11 +345,6 @@ namespace JASONParser
 
             return null;
         }
-
-        public Node Statements()
-        {
-            return null;
-        }
         public Node Else_Claose()
         {
             Node node = new Node("if_statement");
@@ -294,8 +365,29 @@ namespace JASONParser
             }
             return null;
         }
+        public Node Repeat_statement()
+        {
+            Node node = new Node("Repeat_statement");
+            if (match(TINY_Token_Class.repeat) != null)
+            {
+                if (Statements() != null)
+                {
+                    if (match(TINY_Token_Class.until) != null)
+                    {
+                        if (Condition_Statement() != null)
+                        {
+                            node.children.Add(match(TINY_Token_Class.repeat));
+                            node.children.Add(Statements());
+                            node.children.Add(match(TINY_Token_Class.until));
+                            node.children.Add(Condition_Statement());
+                            return node;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
         
-
         //use this function to print the parse tree in TreeView Toolbox
         public static TreeNode PrintParseTree(Node root)
         {
